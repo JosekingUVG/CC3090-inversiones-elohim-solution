@@ -51,7 +51,14 @@ else
 fi
 
 echo "==> Compilando imágenes y desplegando servicios de producción con Docker Compose..."
-docker compose --profile production up --build --remove-orphans "${DOCKER_ARGS[@]}"
+if ! docker compose --profile production up --build --remove-orphans "${DOCKER_ARGS[@]}"; then
+  echo "==> Conflicto detectado en redes o contenedores previos de Docker (stale network/endpoints)."
+  echo "==> Limpiando estado de contenedores previos y reintentando..."
+  docker compose --profile production down --remove-orphans || true
+  docker network prune -f 2>/dev/null || true
+  docker compose --profile production up --build --remove-orphans "${DOCKER_ARGS[@]}"
+fi
+
 
 # 5. Si se encuentra en un entorno con dominio público, gestionar certificado Let's Encrypt
 if [[ "${DOMINIO}" != "localhost" && "${DOMINIO}" != *"lvh.me"* && "${DOMINIO}" != *"127.0.0.1"* ]]; then
