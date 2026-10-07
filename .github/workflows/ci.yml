@@ -12,6 +12,9 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: ${{ github.workspace }}/stack
     steps:
       - name: Checkout complete application
         uses: actions/checkout@v4
